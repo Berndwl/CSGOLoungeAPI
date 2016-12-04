@@ -11,6 +11,30 @@ class CSGOLoungeAPI:
         self.lounge_api = "http://csgolounge.com/api/matches"
         self.api_data = requests.get(self.lounge_api).text
 
+    def get_past_team_results(self, team_name):
+        team = team_name.lower()
+        matches = json.loads(self.api_data)
+        team_matches = []
+
+        for match in matches:
+            if team in match['a'].lower() or team in match['b'].lower():
+                team_matches.append(match)
+
+        return team_matches
+
+    def get_past_match_results(self, team_name_a, team_name_b):
+        teama = team_name_a.lower()
+        teamb = team_name_b.lower()
+        matches = json.loads(self.api_data)
+        team_matches = []
+
+        for match in matches:
+            if (teama in match['a'].lower() and teamb in match['b'].lower()) or \
+                    (teamb in match['a'].lower() and teama in match['b'].lower()):
+                team_matches.append(match)
+
+        return team_matches
+
     def get_upcoming_matches(self):
         upcoming_matches = []
         matches = json.loads(self.get_todays_matches())
@@ -74,27 +98,3 @@ class CSGOLoungeAPI:
         bestof_matches = re.findall(bestof_pattern, self.lounge_page_source)
 
         return bestof_matches
-
-    def get_past_team_results(self, team_name):
-        team = team_name.lower()
-        matches = json.loads(self.api_data)
-        team_matches = []
-
-        for match in matches:
-            if team in match['a'].lower() or team in match['b'].lower():
-                team_matches.append(match)
-
-        return team_matches
-
-    def get_past_match_results(self, team_name_a, team_name_b):
-        teama = team_name_a.lower()
-        teamb = team_name_b.lower()
-        matches = json.loads(self.api_data)
-        team_matches = []
-
-        for match in matches:
-            if (teama in match['a'].lower() and teamb in match['b'].lower()) or \
-                    (teamb in match['a'].lower() and teama in match['b'].lower()):
-                team_matches.append(match)
-
-        return team_matches
