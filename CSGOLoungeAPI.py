@@ -106,5 +106,3 @@ class CSGOLoungeAPI:
         odds_matches = re.findall(odds_pattern, self.lounge_page_source)
 
         return odds_matches
-CSGOLoungeAPi = CSGOLoungeAPI()
-print CSGOLoungeAPi.get_upcoming_matches()
