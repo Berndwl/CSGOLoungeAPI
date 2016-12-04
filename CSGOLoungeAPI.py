@@ -64,11 +64,13 @@ class CSGOLoungeAPI:
         match_teams = self.get_todays_match_teams()
         match_time = self.get_todays_match_time()
         match_bestof = self.get_todays_match_bestof()
+        match_odds = self.get_todays_match_odds()
 
         if match_events:
             while index < len(match_events):
-                matches = {'team1': match_teams[index], 'team2': match_teams[index + 1], 'event': match_events[index],
-                           'time': match_time[index], 'bestof': match_bestof[index]}
+                matches = {'team1': match_teams[index], 'team2': match_teams[index + 1],
+                           'team1_odds': match_odds[index], 'team2_odds': match_odds[index+1],
+                           'event': match_events[index], 'time': match_time[index], 'bestof': match_bestof[index]}
 
                 json_array.append(matches)
                 index += 1
@@ -98,3 +100,11 @@ class CSGOLoungeAPI:
         bestof_matches = re.findall(bestof_pattern, self.lounge_page_source)
 
         return bestof_matches
+
+    def get_todays_match_odds(self):
+        odds_pattern = "</b><br><i>(.*)</i>"
+        odds_matches = re.findall(odds_pattern, self.lounge_page_source)
+
+        return odds_matches
+CSGOLoungeAPi = CSGOLoungeAPI()
+print CSGOLoungeAPi.get_upcoming_matches()
