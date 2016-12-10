@@ -3,7 +3,7 @@ import re
 import json
 
 
-class CSGOLoungeAPI:
+class CSGOLoungeMatchesAPI:
 
     def __init__(self):
         self.lounge_url = "https://csgolounge.com/"
