@@ -1,5 +1,6 @@
-import re
 import requests
+import re
+from bs4 import BeautifulSoup
 
 
 class CSGOLoungeTradeAPI:
@@ -11,8 +12,7 @@ class CSGOLoungeTradeAPI:
 
     def login(self):
         with self.session as s:
-            response = s.get("https://csgolounge.com").text
-
+            response = s.get("https://csgolounge.com").content
             token = re.search("lngSlt = \'(.*)\';", response)
 
             if token:
@@ -28,26 +28,25 @@ class CSGOLoungeTradeAPI:
 
     def bump_trades(self):
         with self.session as s:
-            response = s.get("https://csgolounge.com/mytrades").text
-
-            trade_ids = re.findall("bumpTrade\(\'(.*)\'\)", response)
+            trade_ids = self.get_trade_ids()
 
             for trade_id in trade_ids:
                 post_data = {"trade": trade_id}
-
                 s.post("https://csgolounge.com/ajax/bumpTrade.php", data=post_data)
 
     def get_trade_ids(self):
         with self.session as s:
-            response = s.get("https://csgolounge.com/mytrades").text
+            trade_ids = []
+            response = s.get("https://csgolounge.com/mytrades").content
+            soup = BeautifulSoup(response, "html.parser")
+            trade_polls = soup.find_all("div", "tradepoll")
 
-            trade_ids = re.findall("href=\"trade\?t=(.*)\">", response)
+            for item in trade_polls:
+                trade_ids.append(item.get('id').replace("trade", ""))
 
             return trade_ids
 
     def remove_trade(self, trade_id):
         with self.session as s:
-
             post_data = {"trade": trade_id}
             s.post("https://csgolounge.com/ajax/removeTrade.php", data=post_data)
-
