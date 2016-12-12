@@ -1,10 +1,10 @@
 import requests
 import re
 import json
+from bs4 import BeautifulSoup
 
 
 class CSGOLoungeMatchesAPI:
-
     def __init__(self):
         self.lounge_url = "https://csgolounge.com/"
         self.lounge_page_source = requests.get(self.lounge_url).text
@@ -59,50 +59,71 @@ class CSGOLoungeMatchesAPI:
     def get_todays_matches(self):
         json_array = []
 
-        index = 0
-        match_events = self.get_todays_match_events()
-        match_teams = self.get_todays_match_teams()
-        match_time = self.get_todays_match_time()
-        match_bestof = self.get_todays_match_bestof()
-        match_odds = self.get_todays_match_odds()
+        soup = BeautifulSoup(self.lounge_page_source, "html.parser")
 
-        if match_events:
-            while index < len(match_events):
+        matches = soup.find_all("div", "matchmain")
+
+        for match in matches:
+            match = str(match)
+            index = 0
+            match_event = self.get_todays_match_events(match)
+            match_teams = self.get_todays_match_teams(match)
+            match_time = self.get_todays_match_time(match)
+            match_bestof = self.get_todays_match_bestof(match)
+            match_odds = self.get_todays_match_odds(match)
+
+            if match_event:
                 matches = {'team1': match_teams[index], 'team2': match_teams[index + 1],
-                           'team1_odds': match_odds[index], 'team2_odds': match_odds[index+1],
-                           'event': match_events[index], 'time': match_time[index], 'bestof': match_bestof[index]}
+                           'team1_odds': match_odds[index], 'team2_odds': match_odds[index + 1],
+                           # TODO get live attribute
+                           'event': match_event, 'time': match_time, 'bestof': match_bestof, 'live': 'false'}
 
                 json_array.append(matches)
-                index += 1
 
         return json.dumps(json_array)
 
-    def get_todays_match_teams(self):
+    def get_todays_match_teams(self, match):
         team_pattern = "class=\"teamtext\"><b>(.*)</b>"
-        team_matches = re.findall(team_pattern, self.lounge_page_source)
+        team_matches = re.findall(team_pattern, match)
 
         return team_matches
 
-    def get_todays_match_time(self):
+    def get_todays_match_time(self, match):
         when_pattern = "class=\"whenm\">(.*)<span"
-        when_matches = re.findall(when_pattern, self.lounge_page_source)
+        when_matches = re.search(when_pattern, match)
 
-        return when_matches
+        if when_matches:
+            return when_matches.group(1)
 
-    def get_todays_match_events(self):
+        else:
+            return
+
+    def get_todays_match_events(self, match):
         event_pattern = "class=\"eventm\">(.*)</div>"
-        event_matches = re.findall(event_pattern, self.lounge_page_source)
+        event_matches = re.search(event_pattern, match)
 
-        return event_matches
+        if event_matches:
+            return event_matches.group(1)
 
-    def get_todays_match_bestof(self):
+        else:
+            return
+
+    def get_todays_match_bestof(self, match):
         bestof_pattern = "<span class=\"format\">(.*)</span>"
-        bestof_matches = re.findall(bestof_pattern, self.lounge_page_source)
+        bestof_matches = re.search(bestof_pattern, match)
 
-        return bestof_matches
+        if bestof_matches:
+            return bestof_matches.group(1)
 
-    def get_todays_match_odds(self):
+        else:
+            return
+
+    def get_todays_match_odds(self, match):
         odds_pattern = "</b><br><i>(.*)</i>"
-        odds_matches = re.findall(odds_pattern, self.lounge_page_source)
+        odds_matches = re.findall(odds_pattern, match)
 
         return odds_matches
+
+CSGOLoungeMatches = CSGOLoungeMatchesAPI()
+
+print CSGOLoungeMatches.get_upcoming_matches()
