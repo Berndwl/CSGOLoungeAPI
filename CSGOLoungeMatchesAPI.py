@@ -124,6 +124,3 @@ class CSGOLoungeMatchesAPI:
 
         return odds_matches
 
-CSGOLoungeMatches = CSGOLoungeMatchesAPI()
-
-print CSGOLoungeMatches.get_upcoming_matches()
