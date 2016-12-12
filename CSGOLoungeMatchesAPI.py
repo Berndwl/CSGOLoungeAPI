@@ -35,6 +35,16 @@ class CSGOLoungeMatchesAPI:
 
         return team_matches
 
+    def get_live_matches(self):
+        live_matches = []
+        matches = json.loads(self.get_todays_matches())
+
+        for match in matches:
+            if match['live']:
+                live_matches.append(match)
+
+        return live_matches
+
     def get_upcoming_matches(self):
         upcoming_matches = []
         matches = json.loads(self.get_todays_matches())
@@ -71,12 +81,12 @@ class CSGOLoungeMatchesAPI:
             match_time = self.get_todays_match_time(match)
             match_bestof = self.get_todays_match_bestof(match)
             match_odds = self.get_todays_match_odds(match)
+            is_live = self.is_live(match)
 
             if match_event:
                 matches = {'team1': match_teams[index], 'team2': match_teams[index + 1],
                            'team1_odds': match_odds[index], 'team2_odds': match_odds[index + 1],
-                           # TODO get live attribute
-                           'event': match_event, 'time': match_time, 'bestof': match_bestof, 'live': 'false'}
+                           'event': match_event, 'time': match_time, 'bestof': match_bestof, 'live': is_live}
 
                 json_array.append(matches)
 
@@ -124,3 +134,12 @@ class CSGOLoungeMatchesAPI:
 
         return odds_matches
 
+    def is_live(self, match):
+        live_pattern = "\"> LIVE</span>"
+        is_live = re.search(live_pattern, match)
+
+        if is_live:
+            return True
+
+        else:
+            return False
