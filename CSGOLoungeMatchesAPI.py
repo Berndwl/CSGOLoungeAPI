@@ -68,9 +68,7 @@ class CSGOLoungeMatchesAPI:
 
     def get_todays_matches(self):
         json_array = []
-
         soup = BeautifulSoup(self.lounge_page_source, "html.parser")
-
         matches = soup.find_all("div", "matchmain")
 
         for match in matches:
